@@ -1,0 +1,29 @@
+{
+  "name": "brightdb",
+  "version": "1.0.0",
+  "description": "Consolidated brightDB",
+  "main": "index.js",
+  "dependencies": {
+    "elm-webpack-loader": "^4.4.0",
+    "logplease": "^1.2.14",
+    "node-ipc": "^9.1.1",
+    "persistent-queue": "^1.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0-beta.37",
+    "@babel/preset-env": "^7.0.0-beta.37",
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^8.0.0-beta.0",
+    "babel-preset-stage-2": "^6.24.1",
+    "clean-webpack-plugin": "^0.1.17",
+    "webpack": "^3.8.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "watch": "webpack --watch",
+    "babel": "babel src -d dist --presets=es2015,stage-2 "
+  },
+  "author": "",
+  "license": "ISC"
+}
