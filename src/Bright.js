@@ -1,5 +1,5 @@
 import Logger from 'logplease'
-import NodeConnect from './NodeConnect'
+import BrightNodeConnect from './BrightNodeConnect'
 
 let logger = Logger.create('Bright');
 
@@ -20,7 +20,7 @@ export default function Bright() {
     handlers[event].push(handler)
   }
 
-  let nodeConnect = new NodeConnect()
+  let nodeConnect = new BrightNodeConnect()
 
   const send = (origin, msg) => {
     for(let handler of handlers['message']) {

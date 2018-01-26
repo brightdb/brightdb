@@ -1,4 +1,4 @@
-export default function NodeConnect() {
+export default function BrightNodeConnect() {
   let websockets = {}
 
   this.register = (uri) => {
