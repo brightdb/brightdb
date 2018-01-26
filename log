@@ -1,0 +1,11 @@
+What did I do?
+==============
+
+    npm init
+    follow webpack guide to setup webpack
+    ....
+    npm install --save-dev jest
+    npm install --save-dev babel-jest regenerator-runtime
+    npm install 'babel-core@^7.0.0-0' @babel/core --save-dev
+    add {scripts: { "test" : "jest" }} to package.json
+    add .babelrc
