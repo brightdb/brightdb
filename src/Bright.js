@@ -3,9 +3,31 @@ import NodeConnect from './NodeConnect'
 
 let logger = Logger.create('Bright');
 
+let events = ['message']
+const eventExists = (e) => {
+  return events.indexOf(e) !== -1
+}
+
 export default function Bright() {
-  this.send = () => { logger.error('no send function defined') }
+  let handlers = {
+    'message' : []
+  }
+  this.on = (event, handler) => {
+    if(!eventExists(event)) {
+      logger.error(`event ${event} does not exist`)
+      return
+    }
+    handlers[event].push(handler)
+  }
+
   let nodeConnect = new NodeConnect()
+
+  const send = (origin, msg) => {
+    for(let handler of handlers['message']) {
+      handler(origin, msg)
+    }
+  }
+
   /**
    * origin is the app id
    */
@@ -17,7 +39,7 @@ export default function Bright() {
     }
     switch(data.type){
       case "ping":
-        this.send(origin, {type : "pong"})
+        send(origin, {type : "pong"})
         break
       case "register":
         if(!data.uri) {
