@@ -11,3 +11,14 @@ test('ping yields pong', () => {
 
   bright.message(origin, {type : 'ping'})
 })
+
+test('register', () => {
+  let bright = new Bright()
+  let origin = 'X'
+
+  bright.on('message', (target, message) => {
+  })
+
+  bright.message(origin, {type : 'register', uri : "localhost/bob"})
+
+})
