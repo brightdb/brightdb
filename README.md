@@ -47,3 +47,11 @@ See `bright-todo6/src/index.js` for creating the worker.
     node src/LocalSocketWrapper.js
  
 See `bright-todo6/src/socket-app.js` for creating a standalone app.
+
+## Testing
+
+Run a brightdb-node server for the tests to pass. See [brightdb-node](matthias/brightdb-node) project.
+
+Run tests:
+
+    npm run test
