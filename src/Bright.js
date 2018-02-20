@@ -8,7 +8,7 @@ const eventExists = (e) => {
   return events.indexOf(e) !== -1
 }
 
-export default function Bright() {
+export default function Bright(WebSocket) {
   let handlers = {
     'message' : []
   }
@@ -20,7 +20,7 @@ export default function Bright() {
     handlers[event].push(handler)
   }
 
-  let nodeConnect = new BrightNodeConnect()
+  let nodeConnect = new BrightNodeConnect(WebSocket)
 
   const send = (origin, msg) => {
     for(let handler of handlers['message']) {

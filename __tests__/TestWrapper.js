@@ -1,10 +1,11 @@
 import Bright from '../src/Bright.js'
 import Logger from 'logplease'
+import WebSocket from 'ws'
 
 let logger = Logger.create('TestWrapper')
 
 test('ping yields pong', done => {
-  let bright = new Bright()
+  let bright = new Bright(WebSocket)
   let origin = 'X'
 
   bright.on('message', (target, message) => {
@@ -17,7 +18,7 @@ test('ping yields pong', done => {
 })
 
 test('register', done => {
-  let bright = new Bright()
+  let bright = new Bright(WebSocket)
   let origin = 'X'
 
   bright.on('message', (target, message) => {
@@ -25,6 +26,6 @@ test('register', done => {
     done()
   })
 
-  bright.message(origin, {type : 'register', uri : "localhost/bob"})
+  bright.message(origin, {type : 'register', uri : "local.pisys.eu/bob"})
 
 })

@@ -1,9 +1,9 @@
-import WS from "./BrowserWebSocket"
+import WS from "./BrightWebSocket"
 import Logger from 'logplease'
 
 const port = 5454
 
-export default function BrightNodeConnect() {
+export default function BrightNodeConnect(WebSocket) {
   let logger = Logger.create('BrightNodeConnect')
   let websockets = {}
 
@@ -15,14 +15,12 @@ export default function BrightNodeConnect() {
     return newUri
   }
 
-  let encodePacket = JSON.stringify
-
   let getWS = (uri) => {
     uri = uriToHost(uri)
     if(uri === null) return null
     if(websockets[uri]) 
       return websockets[uri]
-    return new WS(uri)
+    return new WS(WebSocket, uri)
   }
 
   this.register = (uri) => {
@@ -31,7 +29,7 @@ export default function BrightNodeConnect() {
       logger.error(`Cannot create WebSocket for ${uri}`)
       return
     }
-    ws.send(encodePacket({type : 'register', uri : uri}))
+    ws.send(JSON.stringify({type : 'register', uri : uri}))
   }
 }
 
