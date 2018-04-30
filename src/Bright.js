@@ -9,26 +9,46 @@ const eventExists = (e) => {
 }
 
 export default function Bright(WebSocket) {
-  let handlers = {
-    'message' : []
-  }
+  let handlers = {}
+  let registerInquiries = {}
+
   this.on = (event, handler) => {
     if(!eventExists(event)) {
       logger.error(`event ${event} does not exist`)
       return
     }
+    if(!handlers[event]) handlers[event] = []
     handlers[event].push(handler)
   }
 
   let nodeConnect = new BrightNodeConnect(WebSocket)
 
-  const send = (origin, msg) => {
+  nodeConnect.on('message', (dataspace, message) => {
+    logger.debug('receive message', dataspace, message)
+    switch(message.type) {
+      case 'register':
+        if (!message.uri || !message.result) {
+          logger.error("invalid message 'register'", message)
+          break
+        }
+        let origin = registerInquiries[message.uri]
+        if(!origin) {
+          logger.error("register inquiry was not expected", message)
+          break
+        }
+        send(origin, {type:"registered"})
+        break
+    }
+  })
+
+  const send = (target, msg) => {
     for(let handler of handlers['message']) {
-      handler(origin, msg)
+      handler(target, msg)
     }
   }
 
   /**
+   * incoming messages from apps
    * origin is the app id
    */
   this.message = (origin, data) => {
@@ -46,8 +66,10 @@ export default function Bright(WebSocket) {
           logger.error('message register received without uri')
           return
         }
+        registerInquiries[data.uri] = origin
         nodeConnect.register(data.uri)
         break
+
     }
   }
 }

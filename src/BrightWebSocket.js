@@ -21,6 +21,10 @@ export default function WS(WebSocket, uri) {
     }
   })
 
+  this.on = (event, callback) => {
+    ws.on(event, callback)
+  }
+
   this.send = (packet) => {
     if(!isOpen()) {
       logger.debug(`enqueue ${packet}`)
