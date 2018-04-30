@@ -1,5 +1,6 @@
 import Logger from 'logplease'
 import BrightNodeConnect from './BrightNodeConnect'
+import BrightSimplePeer from './BrightSimplePeer'
 
 let logger = Logger.create('Bright');
 
@@ -10,7 +11,11 @@ const eventExists = (e) => {
 
 export default function Bright(WebSocket) {
   let handlers = {}
+  for( let e of events  ) {
+    handlers[e] = []
+  }
   let registerInquiries = {}
+  let instanceUri;
 
   this.on = (event, handler) => {
     if(!eventExists(event)) {
@@ -22,6 +27,7 @@ export default function Bright(WebSocket) {
   }
 
   let nodeConnect = new BrightNodeConnect(WebSocket)
+  let p2pConnect = new BrightSimplePeer()
 
   nodeConnect.on('message', (dataspace, message) => {
     logger.debug('receive message', dataspace, message)
@@ -36,7 +42,15 @@ export default function Bright(WebSocket) {
           logger.error("register inquiry was not expected", message)
           break
         }
+        instanceUri = message.uri
         send(origin, {type:"registered"})
+        break
+      case 'peer':
+        if (!message.uri) {
+          logger.error("invalid message 'peer'", message)
+          break
+        }
+        send(null, {type:"peer", uri : message.uri})
         break
     }
   })
@@ -64,12 +78,22 @@ export default function Bright(WebSocket) {
       case "register":
         if(!data.uri) {
           logger.error('message register received without uri')
-          return
+          break
         }
         registerInquiries[data.uri] = origin
         nodeConnect.register(data.uri)
         break
-
+      case "connect":
+        if(!instanceUri) {
+          logger.error("instance is not registered")
+          break
+        }
+        if(!data.dataspace) {
+          logger.error("received invalid 'connect'", data)
+          break
+        }
+        nodeConnect.connect(instanceUri, data.dataspace)
+        break
     }
   }
 }

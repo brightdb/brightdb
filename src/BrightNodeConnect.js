@@ -14,9 +14,13 @@ export default function BrightNodeConnect(WebSocket) {
   let handlers = {}
 
   let uriToHost = (uri) => {
-    let m = uri.match(/^(.+)\//)
-    if(m == null) return null
-    let newUri = "wss://" + m[1] + ":" + port
+    let host = uri
+    let m = uri.indexOf("/")
+    if(m == 0) return null
+    if(m != -1) {
+      host = uri.substr(0,m)
+    }
+    let newUri = "wss://" + host + ":" + port
     logger.debug(`uriToHost from ${uri} to ${newUri}`)
     return newUri
   }
@@ -52,12 +56,21 @@ export default function BrightNodeConnect(WebSocket) {
   }
 
   this.register = (uri) => {
-    let ws = getWS(uri);
+    let ws = getWS(uri)
     if(ws === null) {
       logger.error(`Cannot create WebSocket for ${uri}`)
       return
     }
     ws.send(JSON.stringify({type : 'register', uri : uri}))
+  }
+
+  this.connect = (instanceUri, dataspace) => {
+    let ws = getWS(dataspace) 
+    if(ws === null) {
+      logger.error(`Cannot create WebSocket for ${dataspace}`)
+      return
+    }
+    ws.send(JSON.stringify({type : 'connect', uri : instanceUri}))
   }
 
   this.on = (event, handler) => {

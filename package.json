@@ -7,7 +7,8 @@
     "elm-webpack-loader": "^4.4.0",
     "logplease": "^1.2.14",
     "node-ipc": "^9.1.1",
-    "queuejs": "^0.1.0"
+    "queuejs": "^0.1.0",
+    "simple-peer": "^9.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.38",
