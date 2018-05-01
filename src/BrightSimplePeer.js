@@ -32,6 +32,11 @@ export default function BrightSimplePeer(WRTC) {
     }, 1)
   }
 
+  const createPeer = initiator => {
+    logger.debug('creating peer, initiator = ', initiator)
+    return new Peer({initiator: initiator, wrtc : WRTC})
+  }
+
   this.connect = (me, you) => {
     logger.debug(`connect ${me} to ${you}`)
     logger.debug('peers', Object.getOwnPropertyNames(peers))
@@ -39,12 +44,8 @@ export default function BrightSimplePeer(WRTC) {
       logger.error(`${me} and ${you} are already connected or connecting`)
       return
     }
-    let opts = {
-      initiator : me < you,
-      wrtc : WRTC
-    }
     
-    peers[you] = new Peer(opts)
+    peers[you] = createPeer(me < you)
     peers[you].on('signal', (data) => {
       send(you, {type: 'signal', signal: data})    
     })
@@ -65,9 +66,8 @@ export default function BrightSimplePeer(WRTC) {
   }
   this.signal = (me, you, signal) => {
     if(!peers[you]) {
-      logger.error(`unexpected signal data from ${you}`)
-      return
-    }
+      peers[you] = createPeer(me < you)
+    }         
     peers[you].signal(signal)
   }
   this.send = (to, payload) => {
