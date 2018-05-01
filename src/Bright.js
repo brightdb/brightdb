@@ -165,6 +165,7 @@ export default function Bright(WebSocket, WRTC) {
           break
         }
         p2pConnect.connect(instanceUri, data.peer)
+        break
       case "data":
         if(!instanceUri) {
           logger.error("instance is not registered")
