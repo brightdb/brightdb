@@ -47,4 +47,8 @@ export default function WS(WebSocket, uri) {
     ws.close()
   }
 
+  setInterval(() => {
+    ws.send(JSON.stringify({"type" : "ping"}))
+  }, 5000)
+
 }
