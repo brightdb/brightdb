@@ -54,6 +54,14 @@ export default function BrightSimplePeer(WRTC) {
     peers[you].on('data', (data) => {
       send(you, {type: 'data', payload : data.toString()})
     })
+    peers[you].on('close', () => {
+      logger.debug('closing peer', you)
+      send(you, {type: 'disconnect_peer'})
+    })
+    peers[you].on('error', () => {
+      logger.error("p2p error", error)
+    })
+
   }
   this.signal = (me, you, signal) => {
     if(!peers[you]) {
@@ -68,5 +76,14 @@ export default function BrightSimplePeer(WRTC) {
       return
     }
     peers[to].send(payload)
+  }
+
+  this.disconnect = peer => {
+    if(!peers[peer]) {
+      logger.error(`peer ${peer} not connected`)
+      return
+    }
+    peers[peer].destroy()
+    delete peers[peer]
   }
 }

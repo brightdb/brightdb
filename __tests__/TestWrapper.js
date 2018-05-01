@@ -66,15 +66,25 @@ test('p2p', done => {
         //expect(connected).toEqual(true)
         data = true
         if(origin == X){
-          receivedX = true
-          bright.message(origin, {type: 'disconnect', dataspace: dataspace})
+          bright.message(origin, {type: 'disconnect_peer', uri: instanceY})
         }
 
       }
-      if (message.type == 'close_peer') {
-        expect(message).toEqual({type: 'close_peer', uri: instanceX})
+      if (message.type == 'disconnect_peer') {
+        logger.debug('disconnect from peer, next remove me', message)
+        let peer = origin == X ? instanceY : instanceX
+        expect(message).toEqual({type: 'disconnect_peer', uri: peer})
         //expect(data).toEqual(true)
         receivedY = true
+        if(origin == Y){
+          bright.message(origin, {type: 'disconnect_dataspace', dataspace : dataspace})
+        }
+
+      }
+      if (message.type == 'remove_peer') {
+        logger.debug('peer removed', message)
+        expect(message).toEqual({type: 'remove_peer', uri: instanceY})
+        receivedX = true
         if(receivedX && receivedY ) done()
       }
     } 

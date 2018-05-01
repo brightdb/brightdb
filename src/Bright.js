@@ -72,13 +72,13 @@ export default function Bright(WebSocket, WRTC) {
         }
         p2pConnect.signal(instanceUri, message.peer, message.signal)
         break
-      case 'close_peer':
+      case 'remove_peer':
         if (!message.uri) {
-          logger.error("invalid message 'close_peer'", message)
+          logger.error("invalid message 'remove_peer'", message)
           break
         }
         removePeer(message.uri)
-        send(null, {type:"close_peer", uri : message.uri})
+        send(null, {type:"remove_peer", uri : message.uri})
         break
     }
   })
@@ -121,6 +121,9 @@ export default function Bright(WebSocket, WRTC) {
         }
         // target should be a concrete receiver app?
         send(null, {type: "data", peer: peer, payload: message.payload})
+        break
+      case 'disconnect_peer':
+        send(null, {type: 'disconnect_peer', uri: peer})
         break
     }
 
@@ -189,13 +192,21 @@ export default function Bright(WebSocket, WRTC) {
         }
         p2pConnect.send(data.peer, data.payload)
         break
-      case "disconnect":
+      case "disconnect_dataspace":
         if(!data.dataspace) {
-          logger.error("received invalid 'disconnect'", data)
+          logger.error("received invalid 'disconnect_dataspace'", data)
           break
         }
         nodeConnect.disconnect(data.dataspace)
         break
+      case "disconnect_peer":
+        if(!data.uri) {
+          logger.error("received invalid 'disconnect_peer'", data)
+          break
+        }
+        p2pConnect.disconnect(data.uri)
+        break
+    
     }
   }
 }
