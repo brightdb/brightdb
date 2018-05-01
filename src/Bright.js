@@ -80,6 +80,13 @@ export default function Bright(WebSocket, WRTC) {
         removePeer(message.uri)
         send(null, {type:"remove_peer", uri : message.uri})
         break
+      case 'wanna_connect':
+        if(!message.peer) {
+          logger.error("invalid message 'wanna_connect'", message)
+          break
+        }
+        p2pConnect.connect(instanceUri, message.peer)
+        break
     }
   })
 
@@ -124,6 +131,10 @@ export default function Bright(WebSocket, WRTC) {
         break
       case 'disconnect_peer':
         send(null, {type: 'disconnect_peer', uri: peer})
+        break
+      case 'wanna_connect':
+        // needed to tell a peer that it should initiate p2p connection
+        nodeConnect.wannaConnect(instanceUri, peer)
         break
     }
 
@@ -206,7 +217,6 @@ export default function Bright(WebSocket, WRTC) {
         }
         p2pConnect.disconnect(data.uri)
         break
-    
     }
   }
 }

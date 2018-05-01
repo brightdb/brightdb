@@ -106,5 +106,13 @@ export default function BrightNodeConnect(WebSocket) {
     websockets[uri].close()
     delete websockets[uri]
   }
+  this.wannaConnect = (me, you) => {
+    let ws = getWS(you)
+    if(ws === null) {
+      logger.error(`Cannot create WebSocket for ${dataspace}`)
+      return
+    }
+    ws.send(JSON.stringify({type:'wanna_connect', from: me, to: you}))
+  }
 }
 

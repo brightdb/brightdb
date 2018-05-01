@@ -32,9 +32,26 @@ export default function BrightSimplePeer(WRTC) {
     }, 1)
   }
 
-  const createPeer = initiator => {
+  const createPeer = (you,initiator) => {
     logger.debug('creating peer, initiator = ', initiator)
-    return new Peer({initiator: initiator, wrtc : WRTC})
+    let p = new Peer({initiator: initiator, wrtc : WRTC})
+    p.on('signal', (data) => {
+      send(you, {type: 'signal', signal: data})    
+    })
+    p.on('connect', () => {
+      send(you, {type: 'connect'})
+    })
+    p.on('data', (data) => {
+      send(you, {type: 'data', payload : data.toString()})
+    })
+    p.on('close', () => {
+      logger.debug('closing peer', you)
+      send(you, {type: 'disconnect_peer'})
+    })
+    p.on('error', () => {
+      logger.error("p2p error", error)
+    })
+    return p
   }
 
   this.connect = (me, you) => {
@@ -45,28 +62,16 @@ export default function BrightSimplePeer(WRTC) {
       return
     }
     
-    peers[you] = createPeer(me < you)
-    peers[you].on('signal', (data) => {
-      send(you, {type: 'signal', signal: data})    
-    })
-    peers[you].on('connect', () => {
-      send(you, {type: 'connect'})
-    })
-    peers[you].on('data', (data) => {
-      send(you, {type: 'data', payload : data.toString()})
-    })
-    peers[you].on('close', () => {
-      logger.debug('closing peer', you)
-      send(you, {type: 'disconnect_peer'})
-    })
-    peers[you].on('error', () => {
-      logger.error("p2p error", error)
-    })
+    let init = me < you
+    peers[you] = createPeer(you, init)
+    if(!init) {
+      send(you, {type:'wanna_connect'})
+    }
 
   }
   this.signal = (me, you, signal) => {
     if(!peers[you]) {
-      peers[you] = createPeer(me < you)
+      peers[you] = createPeer(you, false)
     }         
     peers[you].signal(signal)
   }
