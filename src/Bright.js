@@ -103,11 +103,12 @@ export default function Bright(WebSocket, WRTC) {
         send(null, {type: "connect", peer: peer})
         break
       case 'data':
-        if(!message.data) {
+        if(!message.payload) {
           logger.error('no p2p payload', message)
           break
         }
-        send(null, {type: "data", peer: peer, data: message.data})
+        // target should be a concrete receiver app?
+        send(null, {type: "data", peer: peer, payload: message.payload})
         break
     }
 
@@ -164,6 +165,18 @@ export default function Bright(WebSocket, WRTC) {
           break
         }
         p2pConnect.connect(instanceUri, data.peer)
+      case "data":
+        if(!instanceUri) {
+          logger.error("instance is not registered")
+          break
+        }
+        if(!data.peer || !data.payload) {
+          logger.error("received invalid 'data'", data)
+          break
+        }
+        p2pConnect.send(data.peer, data.payload)
+        break
+
     }
   }
 }

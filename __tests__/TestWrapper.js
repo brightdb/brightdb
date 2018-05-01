@@ -82,7 +82,12 @@ test('p2p', done => {
         bright.message(origin, {type: 'signal', peer : message.uri})
       }
       if (message.type == 'connect') {
-        logger.debug('connected peer', message.peer)
+        logger.debug('connected peer, now send data', message.peer)
+        bright.message(origin, {type: 'data', peer : message.peer, payload: "TEST"})
+      }
+      if (message.type == 'data') {
+        logger.debug('received data from peer', message)
+        expect(message.payload).toEqual("TEST")
         if(message.peer == 'local.pisys.eu/bob' ) receivedX = true
         if(message.peer == 'local.pisys.eu/alice' ) receivedY = true
         if(receivedX && receivedY ) done()

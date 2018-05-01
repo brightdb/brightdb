@@ -52,7 +52,7 @@ export default function BrightSimplePeer(WRTC) {
       send(you, {type: 'connect'})
     })
     peers[you].on('data', (data) => {
-      send(you, {type: 'data', data : data})
+      send(you, {type: 'data', payload : data.toString()})
     })
   }
   this.signal = (me, you, signal) => {
@@ -61,5 +61,12 @@ export default function BrightSimplePeer(WRTC) {
       return
     }
     peers[you].signal(signal)
+  }
+  this.send = (to, payload) => {
+    if(!peers[to]) {
+      logger.error(`peer ${to} not connected`)
+      return
+    }
+    peers[to].send(payload)
   }
 }
