@@ -73,6 +73,17 @@ export default function BrightNodeConnect(WebSocket) {
     ws.send(JSON.stringify({type : 'connect', uri : instanceUri}))
   }
 
+  this.signal = (dataspace, instanceUri, peer, signal) => {
+    logger.debug('dataspace', dataspace)
+    let ws = getWS(dataspace)
+    if(ws === null) {
+      logger.error(`Cannot create WebSocket for ${dataspace}`)
+      return
+    }
+    ws.send(JSON.stringify({type:'signal', from: instanceUri, to: peer, signal: signal}))
+
+  }
+
   this.on = (event, handler) => {
     if(!eventExists(event)) {
       logger.error(`event ${event} does not exist`)

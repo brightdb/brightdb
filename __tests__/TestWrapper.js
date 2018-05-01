@@ -1,6 +1,7 @@
 import Bright from '../src/Bright.js'
 import Logger from 'logplease'
 import WebSocket from 'ws'
+import WRTC from 'wrtc'
 
 let logger = Logger.create('TestWrapper')
 
@@ -56,6 +57,41 @@ test('connect', done => {
 
   bright.on('message', handle(bright))
   bright2.on('message', handle(bright2))
+
+  bright.message(X, {type: 'register', uri: "local.pisys.eu/bob"})
+  bright2.message(Y, {type: 'register', uri: "local.pisys.eu/alice"})
+})
+
+test('p2p', done => {
+  let bright = new Bright(WebSocket, WRTC)
+  let bright2 = new Bright(WebSocket, WRTC)
+  let X = 'X'
+  let Y = 'Y'
+
+  let receivedX = false
+  let receivedY = false
+
+  let handle = (origin, bright) => {
+    return (target, message) => {
+      if (message.type == "registered" ) {
+        logger.debug('registered, now connect')
+        bright.message(origin, {type: 'connect', dataspace : "local.pisys.eu"})
+      }
+      if (message.type == 'peer' ) {
+        logger.debug('got peer, now signal', message.uri)
+        bright.message(origin, {type: 'signal', peer : message.uri})
+      }
+      if (message.type == 'connect') {
+        logger.debug('connected peer', message.peer)
+        if(message.peer == 'local.pisys.eu/bob' ) receivedX = true
+        if(message.peer == 'local.pisys.eu/alice' ) receivedY = true
+        if(receivedX && receivedY ) done()
+      }
+    } 
+  }
+
+  bright.on('message', handle(X, bright))
+  bright2.on('message', handle(Y, bright2))
 
   bright.message(X, {type: 'register', uri: "local.pisys.eu/bob"})
   bright2.message(Y, {type: 'register', uri: "local.pisys.eu/alice"})

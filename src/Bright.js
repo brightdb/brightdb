@@ -9,7 +9,15 @@ const eventExists = (e) => {
   return events.indexOf(e) !== -1
 }
 
-export default function Bright(WebSocket) {
+let dataspaces = {}
+const savePeer = (peer, dataspace) => {
+  if(!dataspaces[peer]) {
+    dataspaces[peer] = new Set()
+  }
+  dataspaces[peer].add(dataspace)
+}
+
+export default function Bright(WebSocket, WRTC) {
   let handlers = {}
   for( let e of events  ) {
     handlers[e] = []
@@ -27,10 +35,10 @@ export default function Bright(WebSocket) {
   }
 
   let nodeConnect = new BrightNodeConnect(WebSocket)
-  let p2pConnect = new BrightSimplePeer()
+  let p2pConnect = new BrightSimplePeer(WRTC)
 
   nodeConnect.on('message', (dataspace, message) => {
-    logger.debug('receive message', dataspace, message)
+    logger.debug('receive message from node', dataspace, message)
     switch(message.type) {
       case 'register':
         if (!message.uri || !message.result) {
@@ -50,15 +58,67 @@ export default function Bright(WebSocket) {
           logger.error("invalid message 'peer'", message)
           break
         }
+        savePeer(message.uri, dataspace)
         send(null, {type:"peer", uri : message.uri})
+        break
+      case 'signal':
+        if (!message.peer || !message.signal) {
+          logger.error("invalid message 'signal'", message)
+          break
+        }
+        p2pConnect.signal(instanceUri, message.peer, message.signal)
         break
     }
   })
 
-  const send = (target, msg) => {
-    for(let handler of handlers['message']) {
-      handler(target, msg)
+  p2pConnect.on('message', (peer, message) => {
+    logger.debug('receive p2p message', peer, message)
+    if(!peer) {
+      logger.error('no peer', peer)
+      return
     }
+    switch(message.type) {
+      case 'signal':
+        if(!message.signal) {
+          logger.error('no signal data', message)
+          break
+        }
+        logger.debug('dataspaces', dataspaces)
+        if(!dataspaces[peer]) {
+          logger.error(`no dataspaces found for ${peer}`)
+          break
+        }
+        let space = null
+        // a hack to pick one item from the set
+        dataspaces[peer].forEach((value) => {
+          space = value
+        })
+        if(!space) {
+          logger.error(`no dataspaces found for ${peer} found`)
+          break
+        }
+        nodeConnect.signal(space, instanceUri, peer, message.signal )
+        break
+      case 'connect':
+        send(null, {type: "connect", peer: peer})
+        break
+      case 'data':
+        if(!message.data) {
+          logger.error('no p2p payload', message)
+          break
+        }
+        send(null, {type: "data", peer: peer, data: message.data})
+        break
+    }
+
+  })
+
+  const send = (target, msg) => {
+    setTimeout(() => {
+      for(let handler of handlers['message']) {
+        handler(target, msg)
+      }
+    }, 1)
   }
 
   /**
@@ -94,6 +154,16 @@ export default function Bright(WebSocket) {
         }
         nodeConnect.connect(instanceUri, data.dataspace)
         break
+      case "signal":
+        if(!instanceUri) {
+          logger.error("instance is not registered")
+          break
+        }
+        if(!data.peer) {
+          logger.error("received invalid 'signal'", data)
+          break
+        }
+        p2pConnect.connect(instanceUri, data.peer)
     }
   }
 }
