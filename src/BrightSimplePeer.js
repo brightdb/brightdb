@@ -46,6 +46,7 @@ export default function BrightSimplePeer(WRTC) {
     })
     p.on('close', () => {
       logger.debug('closing peer', you)
+      delete peers[you]
       send(you, {type: 'disconnect_peer'})
     })
     p.on('error', () => {
