@@ -37,6 +37,7 @@ export default function BrightNodeConnect(WebSocket) {
     if(websockets[uri]) 
       return websockets[uri]
     let ws = new WS(WebSocket, uri)
+    websockets[uri] = ws
 
     ws.on('message', message => {
       logger.debug('receive message', message)
@@ -91,6 +92,19 @@ export default function BrightNodeConnect(WebSocket) {
     }
     if(!handlers[event]) handlers[event] = []
     handlers[event].push(handler)
+  }
+
+  this.disconnect = (dataspace) => {
+    let uri = uriToHost(dataspace)
+    for(let w in websockets) {
+      logger.debug('websocket entry ', w)
+    }
+    if(!websockets[uri])  {
+      logger.error(`no websocket found for ${uri}`)
+      return
+    }
+    websockets[uri].close()
+    delete websockets[uri]
   }
 }
 

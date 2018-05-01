@@ -17,6 +17,10 @@ const savePeer = (peer, dataspace) => {
   dataspaces[peer].add(dataspace)
 }
 
+const removePeer = (peer) => {
+  delete dataspaces[peer]
+}
+
 export default function Bright(WebSocket, WRTC) {
   let handlers = {}
   for( let e of events  ) {
@@ -67,6 +71,14 @@ export default function Bright(WebSocket, WRTC) {
           break
         }
         p2pConnect.signal(instanceUri, message.peer, message.signal)
+        break
+      case 'close_peer':
+        if (!message.uri) {
+          logger.error("invalid message 'close_peer'", message)
+          break
+        }
+        removePeer(message.uri)
+        send(null, {type:"close_peer", uri : message.uri})
         break
     }
   })
@@ -177,7 +189,13 @@ export default function Bright(WebSocket, WRTC) {
         }
         p2pConnect.send(data.peer, data.payload)
         break
-
+      case "disconnect":
+        if(!data.dataspace) {
+          logger.error("received invalid 'disconnect'", data)
+          break
+        }
+        nodeConnect.disconnect(data.dataspace)
+        break
     }
   }
 }

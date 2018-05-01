@@ -12,7 +12,7 @@ export default function WS(WebSocket, uri) {
     return ws.readyState == WebSocket.OPEN
   }
 
-  ws.on('open', () => {
+  ws.addEventListener('open', () => {
     logger.debug('ws onopen')
     while(queue.size() > 0) {
       let packet = queue.deq()
@@ -22,7 +22,15 @@ export default function WS(WebSocket, uri) {
   })
 
   this.on = (event, callback) => {
-    ws.on(event, callback)
+    switch(event) {
+      case 'message':
+        ws.addEventListener(event, message => {
+          callback(message.data)
+        })
+        break
+      default:
+        ws.addEventListener(event, callback)
+    }
   }
 
   this.send = (packet) => {
@@ -33,6 +41,10 @@ export default function WS(WebSocket, uri) {
     }
     logger.debug(`send ${packet} right away`)
     ws.send(packet)
+  }
+
+  this.close = () => {
+    ws.close()
   }
 
 }
