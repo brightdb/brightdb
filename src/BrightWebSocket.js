@@ -12,12 +12,25 @@ export default function WS(WebSocket, uri) {
     return ws.readyState == WebSocket.OPEN
   }
 
+  const send = (ws, packet) => {
+      try {
+        ws.send(packet, err => {
+          if(err) {
+            logger.error('could send through websocket, not recovering ', e)
+          }
+        })
+      } catch(e) {
+        logger.error('could send through websocket, not recovering ', e)
+      }
+
+  }
+
   ws.addEventListener('open', () => {
     logger.debug('ws onopen')
     while(queue.size() > 0) {
       let packet = queue.deq()
       logger.debug(`dequeue and send ${packet}`)
-      ws.send(packet)
+      send(ws, packet)
     }
   })
 
@@ -40,7 +53,7 @@ export default function WS(WebSocket, uri) {
       return
     }
     logger.debug(`send ${packet} right away`)
-    ws.send(packet)
+    send(ws, packet)
   }
 
   this.close = () => {
@@ -48,7 +61,7 @@ export default function WS(WebSocket, uri) {
   }
 
   setInterval(() => {
-    ws.send(JSON.stringify({"type" : "ping"}))
+    send(ws, JSON.stringify({"type" : "ping"}))
   }, 5000)
 
 }
