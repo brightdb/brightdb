@@ -5,17 +5,19 @@ let logger = Logger.create('BrightWebSocket')
 
 export default function WS (WebSocket, uri) {
   let ws = new WebSocket(uri)
+
   let queue = new Queue()
 
   let isOpen = () => {
-    return ws.readyState == WebSocket.OPEN
+    return ws.readyState === WebSocket.OPEN
   }
 
   const send = (ws, packet) => {
+    if (!isOpen()) return
     try {
       ws.send(packet, err => {
         if (err) {
-          logger.error('could send through websocket, not recovering ', e)
+          logger.error('could send through websocket, not recovering ', err)
         }
       })
     } catch (e) {

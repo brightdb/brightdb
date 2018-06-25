@@ -65,8 +65,9 @@ export default function BrightSimplePeer (WRTC) {
       delete peers[you]
       send(you, {type: 'disconnect_peer'})
     })
-    p.on('error', () => {
+    p.on('error', (error) => {
       logger.error('p2p error', error)
+      send(you, {type: 'error', error: error})
     })
     return p
   }
