@@ -9,56 +9,56 @@ const eventExists = (e) => {
 }
 
 const iceServers = [
-  { 
-    url:'stun:stun.l.google.com:19302'
+  {
+    url: 'stun:stun.l.google.com:19302'
   },
   {
-      url: 'turn:192.158.29.39:3478?transport=udp',
-      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      username: '28224511:1379330808'
+    url: 'turn:192.158.29.39:3478?transport=udp',
+    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+    username: '28224511:1379330808'
   },
   {
-      url: 'turn:192.158.29.39:3478?transport=tcp',
-      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      username: '28224511:1379330808'
+    url: 'turn:192.158.29.39:3478?transport=tcp',
+    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+    username: '28224511:1379330808'
   }
 ]
 
-export default function BrightSimplePeer(WRTC) {
+export default function BrightSimplePeer (WRTC) {
   let peers = {}
   let handlers = {}
-  for( let e of events  ) {
+  for (let e of events) {
     handlers[e] = []
   }
 
   this.on = (event, handler) => {
-    if(!eventExists(event)) {
+    if (!eventExists(event)) {
       logger.error(`event ${event} does not exist`)
       return
     }
-    if(!handlers[event]) handlers[event] = []
+    if (!handlers[event]) handlers[event] = []
     handlers[event].push(handler)
   }
 
   const send = (peer, msg) => {
     setTimeout(() => {
-      for(let handler of handlers['message']) {
+      for (let handler of handlers['message']) {
         handler(peer, msg)
       }
     }, 1)
   }
 
-  const createPeer = (you,initiator) => {
+  const createPeer = (you, initiator) => {
     logger.debug('creating peer, initiator = ', initiator)
-    let p = new Peer({initiator: initiator, wrtc : WRTC})
+    let p = new Peer({initiator: initiator, wrtc: WRTC})
     p.on('signal', (data) => {
-      send(you, {type: 'signal', signal: data})    
+      send(you, {type: 'signal', signal: data})
     })
     p.on('connect', () => {
       send(you, {type: 'connect'})
     })
     p.on('data', (data) => {
-      send(you, {type: 'data', payload : data.toString()})
+      send(you, {type: 'data', payload: data.toString()})
     })
     p.on('close', () => {
       logger.debug('closing peer', you)
@@ -66,7 +66,7 @@ export default function BrightSimplePeer(WRTC) {
       send(you, {type: 'disconnect_peer'})
     })
     p.on('error', () => {
-      logger.error("p2p error", error)
+      logger.error('p2p error', error)
     })
     return p
   }
@@ -74,26 +74,25 @@ export default function BrightSimplePeer(WRTC) {
   this.connect = (me, you) => {
     logger.debug(`connect ${me} to ${you}`)
     logger.debug('peers', Object.getOwnPropertyNames(peers))
-    if( peers[you] ) {
+    if (peers[you]) {
       logger.error(`${me} and ${you} are already connected or connecting`)
       return
     }
-    
+
     let init = me < you
     peers[you] = createPeer(you, init)
-    if(!init) {
-      send(you, {type:'wanna_connect'})
+    if (!init) {
+      send(you, {type: 'wanna_connect'})
     }
-
   }
   this.signal = (me, you, signal) => {
-    if(!peers[you]) {
+    if (!peers[you]) {
       peers[you] = createPeer(you, false)
-    }         
+    }
     peers[you].signal(signal)
   }
   this.send = (to, payload) => {
-    if(!peers[to]) {
+    if (!peers[to]) {
       logger.error(`peer ${to} not connected`)
       return
     }
@@ -101,7 +100,7 @@ export default function BrightSimplePeer(WRTC) {
   }
 
   this.disconnect = peer => {
-    if(!peers[peer]) {
+    if (!peers[peer]) {
       logger.error(`peer ${peer} not connected`)
       return
     }

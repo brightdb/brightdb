@@ -1,9 +1,9 @@
-const path = require('path');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const path = require('path')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
   entry: {
-    'worker' : './src/WebWorkerWrapper.js'
+    'worker': './src/WebWorkerWrapper.js'
   },
   plugins: [
     new CleanWebpackPlugin(['dist'])
@@ -33,5 +33,4 @@ module.exports = {
     }
     ]
   }
-};
-
+}

@@ -2,7 +2,7 @@ import Logger from 'logplease'
 import BrightNodeConnect from './BrightNodeConnect'
 import BrightSimplePeer from './BrightSimplePeer'
 
-let logger = Logger.create('Bright');
+let logger = Logger.create('Bright')
 
 let events = ['message']
 const eventExists = (e) => {
@@ -11,7 +11,7 @@ const eventExists = (e) => {
 
 let dataspaces = {}
 const savePeer = (peer, dataspace) => {
-  if(!dataspaces[peer]) {
+  if (!dataspaces[peer]) {
     dataspaces[peer] = new Set()
   }
   dataspaces[peer].add(dataspace)
@@ -21,20 +21,20 @@ const removePeer = (peer) => {
   delete dataspaces[peer]
 }
 
-export default function Bright(WebSocket, WRTC) {
+export default function Bright (WebSocket, WRTC) {
   let handlers = {}
-  for( let e of events  ) {
+  for (let e of events) {
     handlers[e] = []
   }
   let registerInquiries = {}
-  let instanceUri;
+  let instanceUri
 
   this.on = (event, handler) => {
-    if(!eventExists(event)) {
+    if (!eventExists(event)) {
       logger.error(`event ${event} does not exist`)
       return
     }
-    if(!handlers[event]) handlers[event] = []
+    if (!handlers[event]) handlers[event] = []
     handlers[event].push(handler)
   }
 
@@ -43,19 +43,19 @@ export default function Bright(WebSocket, WRTC) {
 
   nodeConnect.on('message', (dataspace, message) => {
     logger.debug('receive message from node', dataspace, message)
-    switch(message.type) {
+    switch (message.type) {
       case 'register':
         if (!message.uri || !message.result) {
           logger.error("invalid message 'register'", message)
           break
         }
         let origin = registerInquiries[message.uri]
-        if(!origin) {
-          logger.error("register inquiry was not expected", message)
+        if (!origin) {
+          logger.error('register inquiry was not expected', message)
           break
         }
         instanceUri = message.uri
-        send(origin, {type:"registered"})
+        send(origin, {type: 'registered'})
         break
       case 'peer':
         if (!message.uri) {
@@ -63,7 +63,7 @@ export default function Bright(WebSocket, WRTC) {
           break
         }
         savePeer(message.uri, dataspace)
-        send(null, {type:"peer", uri : message.uri})
+        send(null, {type: 'peer', uri: message.uri})
         break
       case 'signal':
         if (!message.peer || !message.signal) {
@@ -78,10 +78,10 @@ export default function Bright(WebSocket, WRTC) {
           break
         }
         removePeer(message.uri)
-        send(null, {type:"remove_peer", uri : message.uri})
+        send(null, {type: 'remove_peer', uri: message.uri})
         break
       case 'wanna_connect':
-        if(!message.peer) {
+        if (!message.peer) {
           logger.error("invalid message 'wanna_connect'", message)
           break
         }
@@ -92,18 +92,18 @@ export default function Bright(WebSocket, WRTC) {
 
   p2pConnect.on('message', (peer, message) => {
     logger.debug('receive p2p message', peer, message)
-    if(!peer) {
+    if (!peer) {
       logger.error('no peer', peer)
       return
     }
-    switch(message.type) {
+    switch (message.type) {
       case 'signal':
-        if(!message.signal) {
+        if (!message.signal) {
           logger.error('no signal data', message)
           break
         }
         logger.debug('dataspaces', dataspaces)
-        if(!dataspaces[peer]) {
+        if (!dataspaces[peer]) {
           logger.error(`no dataspaces found for ${peer}`)
           break
         }
@@ -112,22 +112,22 @@ export default function Bright(WebSocket, WRTC) {
         dataspaces[peer].forEach((value) => {
           space = value
         })
-        if(!space) {
+        if (!space) {
           logger.error(`no dataspaces found for ${peer} found`)
           break
         }
-        nodeConnect.signal(space, instanceUri, peer, message.signal )
+        nodeConnect.signal(space, instanceUri, peer, message.signal)
         break
       case 'connect':
-        send(null, {type: "connect", peer: peer})
+        send(null, {type: 'connect', peer: peer})
         break
       case 'data':
-        if(!message.payload) {
+        if (!message.payload) {
           logger.error('no p2p payload', message)
           break
         }
         // target should be a concrete receiver app?
-        send(null, {type: "data", peer: peer, payload: message.payload})
+        send(null, {type: 'data', peer: peer, payload: message.payload})
         break
       case 'disconnect_peer':
         send(null, {type: 'disconnect_peer', uri: peer})
@@ -137,12 +137,11 @@ export default function Bright(WebSocket, WRTC) {
         nodeConnect.wannaConnect(instanceUri, peer)
         break
     }
-
   })
 
   const send = (target, msg) => {
     setTimeout(() => {
-      for(let handler of handlers['message']) {
+      for (let handler of handlers['message']) {
         handler(target, msg)
       }
     }, 1)
@@ -154,64 +153,64 @@ export default function Bright(WebSocket, WRTC) {
    */
   this.message = (origin, data) => {
     logger.info('message received', origin, data)
-    if(!origin) {
+    if (!origin) {
       logger.error('no origin given')
       return
     }
-    switch(data.type){
-      case "ping":
-        send(origin, {type : "pong"})
+    switch (data.type) {
+      case 'ping':
+        send(origin, {type: 'pong'})
         break
-      case "register":
-        if(!data.uri) {
+      case 'register':
+        if (!data.uri) {
           logger.error('message register received without uri')
           break
         }
         registerInquiries[data.uri] = origin
         nodeConnect.register(data.uri)
         break
-      case "connect":
-        if(!instanceUri) {
-          logger.error("instance is not registered")
+      case 'connect':
+        if (!instanceUri) {
+          logger.error('instance is not registered')
           break
         }
-        if(!data.dataspace) {
+        if (!data.dataspace) {
           logger.error("received invalid 'connect'", data)
           break
         }
         nodeConnect.connect(instanceUri, data.dataspace)
         break
-      case "signal":
-        if(!instanceUri) {
-          logger.error("instance is not registered")
+      case 'signal':
+        if (!instanceUri) {
+          logger.error('instance is not registered')
           break
         }
-        if(!data.peer) {
+        if (!data.peer) {
           logger.error("received invalid 'signal'", data)
           break
         }
         p2pConnect.connect(instanceUri, data.peer)
         break
-      case "data":
-        if(!instanceUri) {
-          logger.error("instance is not registered")
+      case 'data':
+        if (!instanceUri) {
+          logger.error('instance is not registered')
           break
         }
-        if(!data.peer || !data.payload) {
+        if (!data.peer || !data.payload) {
           logger.error("received invalid 'data'", data)
           break
         }
         p2pConnect.send(data.peer, data.payload)
         break
-      case "disconnect_dataspace":
-        if(!data.dataspace) {
+      case 'disconnect_dataspace':
+        if (!data.dataspace) {
           logger.error("received invalid 'disconnect_dataspace'", data)
           break
         }
         nodeConnect.disconnect(data.dataspace)
         break
-      case "disconnect_peer":
-        if(!data.uri) {
+      case 'disconnect_peer':
+        if (!data.uri) {
           logger.error("received invalid 'disconnect_peer'", data)
           break
         }
@@ -220,4 +219,3 @@ export default function Bright(WebSocket, WRTC) {
     }
   }
 }
-

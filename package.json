@@ -22,6 +22,7 @@
     "clean-webpack-plugin": "^0.1.17",
     "jest": "^22.1.4",
     "regenerator-runtime": "^0.11.1",
+    "standard": "^11.0.1",
     "webpack": "^3.8.1"
   },
   "scripts": {
